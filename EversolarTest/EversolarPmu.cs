@@ -19,18 +19,22 @@ namespace EversolarTest
         }
 
 
-        public void Register()
+        public InverterPacket Register()
         {
-            // Offline query
-            WritePacket(0x00, ControlCode.Register, 0x00);
+            WritePacket(0x00, ControlCodes.Register, RegisterFunctions.OfflineQuery);
 
-            var registerRequest = ReadPacket();
+            return ReadPacket();
+        }
 
+        public InverterPacket SendRegisterAddress(InverterPacket packet)
+        {
+            WritePacket(packet.SourceAddress, ControlCodes.Register, RegisterFunctions.SendRegisterAddress);
 
+            return ReadPacket();
         }
 
 
-        private Packet ReadPacket()
+        private InverterPacket ReadPacket()
         {
             byte[] buffer = new byte[9];
             _serialPort.Read(buffer, 0, buffer.Length);
@@ -38,14 +42,16 @@ namespace EversolarTest
             byte[] remainder = new byte[buffer[8] + 2];
             _serialPort.Read(remainder, 0, remainder.Length);
 
-            return new Packet(buffer.Concat(remainder).ToArray());
+            return new InverterPacket(buffer.Concat(remainder).ToArray());
         }
 
-        private void WritePacket(byte destAddress, ControlCode controlCode, byte funcCode, byte[] data = null)
+        private void WritePacket(byte destAddress, ControlCodes controlCode, byte funcCode, byte[] data = null)
         {
+            data = data ?? new byte[0];
+
             var packet = new byte[11 + data.Length];
 
-            // Header;
+            // Header
             packet[0] = 0xAA;
             packet[1] = 0x55;
 
@@ -62,18 +68,17 @@ namespace EversolarTest
             packet[7] = funcCode;
 
             // Data
-            data = data ?? new byte[0];
-
             packet[8] = (byte)data.Length;
             Array.Copy(data, 0, packet, 9, data.Length);
 
             // Checksum
             var checksum = (ushort)packet.Sum(b => b);
 
-            packet[packet.Length - 2] = (byte)((checksum & 0xFF00) >> 8);
-            packet[packet.Length - 1] = (byte)checksum;
+            packet[packet.Length - 2] = (byte)checksum;
+            packet[packet.Length - 1] = (byte)((checksum & 0xFF00) >> 8);
 
-            _serialPort.Write(data, 0, data.Length);
+            _serialPort.DiscardInBuffer();
+            _serialPort.Write(packet, 0, packet.Length);
         }
     }
 }
