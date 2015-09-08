@@ -43,11 +43,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControlCodes.cs" />
-    <Compile Include="EversolarPmu.cs" />
+    <Compile Include="EversolarPmuDriver.cs" />
+    <Compile Include="Packets\AddressConfirmPacket.cs" />
     <Compile Include="Packets\InverterPacket.cs" />
+    <Compile Include="Packets\QueryNormalInfoPacket.cs" />
     <Compile Include="Packets\RegisterRequestPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadFunctions.cs" />
     <Compile Include="RegisterFunctions.cs" />
   </ItemGroup>
   <ItemGroup>

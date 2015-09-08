@@ -6,15 +6,16 @@ namespace EversolarTest.Packets
     public class InverterPacket
     {
         public byte[] Data { get; private set; }
+
         public byte[] Header { get; private set; }
         public byte SourceAddress { get; private set; }
         public byte DestinationAddress { get; private set; }
         public ControlCodes ControlCode { get; private set; }
         public byte FunctionCode { get; private set; }
         public byte[] Payload { get; private set; }
-        public byte[] Checksum { get; private set; }
 
-        public virtual void Fill(byte[] data)
+
+        public virtual void Parse(byte[] data)
         {
             Data = data;
 
@@ -26,15 +27,10 @@ namespace EversolarTest.Packets
             ControlCode = (ControlCodes)data[6];
             FunctionCode = data[7];
 
-            if (data[8] > 0)
-            {
-                Payload = new byte[data[8]];
+            Payload = new byte[data[8]];
 
+            if (Payload.Length > 0)
                 Array.Copy(data, 9, Payload, 0, Payload.Length);
-            }
-
-            Checksum = new byte[2];
-            Array.Copy(data, data.Length - 2, Checksum, 0, 2);
         }
     }
 }

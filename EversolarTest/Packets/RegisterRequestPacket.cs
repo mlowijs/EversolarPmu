@@ -5,15 +5,15 @@ namespace EversolarTest.Packets
 {
     public class RegisterRequestPacket : InverterPacket
     {
-        public string SerialNumber { get; set; }
-        public byte[] SerialNumberBytes { get; set; }
+        public string SerialNumber { get; private set; }
+        public byte[] SerialNumberBytes { get; private set; }
 
-        public byte[] RegistrationCode { get; set; }
+        public byte[] RegistrationCode { get; private set; }
 
 
-        public override void Fill(byte[] data)
+        public override void Parse(byte[] data)
         {
-            base.Fill(data);
+            base.Parse(data);
 
             SerialNumberBytes = Payload.Take(16).ToArray();
             SerialNumber = Encoding.ASCII.GetString(SerialNumberBytes);

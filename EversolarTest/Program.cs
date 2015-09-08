@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EversolarTest.Packets;
+using System;
 
 namespace EversolarTest
 {
@@ -6,11 +7,11 @@ namespace EversolarTest
     {
         static void Main(string[] args)
         {
-            using (var pmu = new EversolarPmu("COM3", 0x01))
+            using (var pmu = new EversolarPmuDriver("COM3", 0x01))
             {
                 var registration = pmu.Register();
 
-                Console.WriteLine(registration.Checksum);
+                Console.WriteLine(registration);
             }
         }
     }
