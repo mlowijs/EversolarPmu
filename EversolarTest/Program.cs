@@ -1,4 +1,6 @@
-﻿namespace EversolarTest
+﻿using System;
+
+namespace EversolarTest
 {
     class Program
     {
@@ -8,7 +10,7 @@
             {
                 var registration = pmu.Register();
 
-                System.Console.WriteLine(registration.Checksum);
+                Console.WriteLine(registration.Checksum);
             }
         }
     }

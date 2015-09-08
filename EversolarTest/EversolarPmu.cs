@@ -55,10 +55,10 @@ namespace EversolarTest
         //    return WaitForPacket(0x00, ControlCodes.Register, RegisterFunctions.ReRegister);
         //}
 
-        public InverterPacket SendRegisterAddress(InverterPacket packet)
-        {
-            return WaitForPacket(packet.SourceAddress, ControlCodes.Register, RegisterFunctions.SendRegisterAddress);
-        }
+        //public InverterPacket SendRegisterAddress(InverterPacket packet)
+        //{
+        //    return WaitForPacket(packet.SourceAddress, ControlCodes.Register, RegisterFunctions.SendRegisterAddress);
+        //}
 
 
         private TPacket WaitForPacket<TPacket>(byte destAddress, ControlCodes controlCode, byte funcCode, byte[] data = null)
