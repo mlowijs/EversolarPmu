@@ -1,16 +1,15 @@
-﻿using System.IO.Ports;
-
-namespace EversolarTest
+﻿namespace EversolarTest
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var serialPort = new SerialPort("COM3", 9600, Parity.None, 8, StopBits.One);
+            using (var pmu = new EversolarPmu("COM3", 0x01))
+            {
+                var registration = pmu.Register();
 
-            var pmu = new EversolarPmu(serialPort, 0x10);
-            pmu.Register();
-            
+                System.Console.WriteLine(registration.Checksum);
+            }
         }
     }
 }

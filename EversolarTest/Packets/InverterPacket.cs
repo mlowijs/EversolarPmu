@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Linq;
 
-namespace EversolarTest
+namespace EversolarTest.Packets
 {
     public class InverterPacket
     {
+        public byte[] Data { get; private set; }
         public byte[] Header { get; private set; }
         public byte SourceAddress { get; private set; }
         public byte DestinationAddress { get; private set; }
         public ControlCodes ControlCode { get; private set; }
         public byte FunctionCode { get; private set; }
-        public byte[] Data { get; private set; }
+        public byte[] Payload { get; private set; }
         public byte[] Checksum { get; private set; }
 
-        public InverterPacket(byte[] data)
+        public virtual void Fill(byte[] data)
         {
+            Data = data;
+
             Header = data.Take(2).ToArray();
 
             SourceAddress = data[2];
@@ -25,14 +28,13 @@ namespace EversolarTest
 
             if (data[8] > 0)
             {
-                Data = new byte[data[8]];
+                Payload = new byte[data[8]];
 
-                Array.Copy(data, 9, Data, 0, Data.Length);
+                Array.Copy(data, 9, Payload, 0, Payload.Length);
             }
 
             Checksum = new byte[2];
             Array.Copy(data, data.Length - 2, Checksum, 0, 2);
-            Checksum = Checksum.Reverse().ToArray();
         }
     }
 }

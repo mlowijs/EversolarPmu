@@ -1,48 +1,83 @@
-﻿using System;
+﻿using EversolarTest.Packets;
+using System;
 using System.IO.Ports;
 using System.Linq;
+using System.Threading;
 
 namespace EversolarTest
 {
-    public class EversolarPmu
+    public class EversolarPmu : IDisposable
     {
         private SerialPort _serialPort;
         private byte _address;
+        private byte[] _lastPacketData = null;
 
-        public EversolarPmu(SerialPort serialPort, byte address)
+        public EversolarPmu(string portName, byte address)
         {
-            _serialPort = serialPort;
             _address = address;
+
+            _serialPort = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One)
+            {
+                Handshake = Handshake.None,
+                ReadBufferSize = 256,
+            };
+
+            _serialPort.DataReceived += OnSerialDataReceived;
 
             if (!_serialPort.IsOpen)
                 _serialPort.Open();
         }
 
-
-        public InverterPacket Register()
+        public void Dispose()
         {
-            WritePacket(0x00, ControlCodes.Register, RegisterFunctions.OfflineQuery);
-
-            return ReadPacket();
+            _serialPort.Close();
         }
+
+        private void OnSerialDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            var buffer = new byte[9];
+            _serialPort.Read(buffer, 0, buffer.Length);
+
+            var remainder = new byte[buffer[8] + 2];
+            _serialPort.Read(remainder, 0, remainder.Length);
+
+            _lastPacketData = buffer.Concat(remainder).ToArray();
+        }
+
+
+        public RegisterRequestPacket Register()
+        {
+            return WaitForPacket<RegisterRequestPacket>(0x00, ControlCodes.Register, RegisterFunctions.OfflineQuery);
+        }
+
+        //public InverterPacket ReRegister()
+        //{
+        //    return WaitForPacket(0x00, ControlCodes.Register, RegisterFunctions.ReRegister);
+        //}
 
         public InverterPacket SendRegisterAddress(InverterPacket packet)
         {
-            WritePacket(packet.SourceAddress, ControlCodes.Register, RegisterFunctions.SendRegisterAddress);
-
-            return ReadPacket();
+            return WaitForPacket(packet.SourceAddress, ControlCodes.Register, RegisterFunctions.SendRegisterAddress);
         }
 
 
-        private InverterPacket ReadPacket()
+        private TPacket WaitForPacket<TPacket>(byte destAddress, ControlCodes controlCode, byte funcCode, byte[] data = null)
+            where TPacket : InverterPacket, new()
         {
-            byte[] buffer = new byte[9];
-            _serialPort.Read(buffer, 0, buffer.Length);
+            _lastPacketData = null;
 
-            byte[] remainder = new byte[buffer[8] + 2];
-            _serialPort.Read(remainder, 0, remainder.Length);
+            while (_lastPacketData == null)
+            {
+                WritePacket(destAddress, controlCode, funcCode, data);
+                Thread.Sleep(1000);
 
-            return new InverterPacket(buffer.Concat(remainder).ToArray());
+                Console.WriteLine("Sending packet");
+            }
+
+            var packet = new TPacket();
+            packet.Fill(_lastPacketData);
+
+            return packet;
         }
 
         private void WritePacket(byte destAddress, ControlCodes controlCode, byte funcCode, byte[] data = null)
@@ -74,10 +109,10 @@ namespace EversolarTest
             // Checksum
             var checksum = (ushort)packet.Sum(b => b);
 
-            packet[packet.Length - 2] = (byte)checksum;
-            packet[packet.Length - 1] = (byte)((checksum & 0xFF00) >> 8);
+            packet[packet.Length - 2] = (byte)(checksum >> 8);
+            packet[packet.Length - 1] = (byte)checksum;
 
-            _serialPort.DiscardInBuffer();
+            //_serialPort.DiscardInBuffer();
             _serialPort.Write(packet, 0, packet.Length);
         }
     }
