@@ -1,7 +1,7 @@
 ﻿
 namespace EversolarTest
 {
-    public enum ControlCodes : byte
+    public enum ControlCode : byte
     {
         Register = 0x10,
         Read = 0x11,

@@ -50,17 +50,17 @@ namespace EversolarTest
 
         public RegisterRequestPacket Register()
         {
-            return WaitForPacket<RegisterRequestPacket>(0x00, ControlCodes.Register, RegisterFunctions.OfflineQuery);
+            return WaitForPacket<RegisterRequestPacket>(0x00, ControlCode.Register, RegisterFunction.OfflineQuery);
         }
 
         public AddressConfirmPacket SendRegisterAddress(RegisterRequestPacket packet)
         {
-            return WaitForPacket<AddressConfirmPacket>(packet.SourceAddress, ControlCodes.Register, RegisterFunctions.SendRegisterAddress, packet.Payload);
+            return WaitForPacket<AddressConfirmPacket>(packet.SourceAddress, ControlCode.Register, RegisterFunction.SendRegisterAddress, packet.Payload);
         }
 
         public QueryNormalInfoPacket QueryNormalInfo(byte inverterAddress)
         {
-            return WaitForPacket<QueryNormalInfoPacket>(inverterAddress, ControlCodes.Read, ReadFunctions.QueryNormalInfo);
+            return WaitForPacket<QueryNormalInfoPacket>(inverterAddress, ControlCode.Read, ReadFunction.QueryNormalInfo);
         }
 
 
@@ -74,17 +74,17 @@ namespace EversolarTest
             return data.Take(data.Length - 2).Sum(b => b) == checksum;
         }
 
-        private TPacket WaitForPacket<TPacket>(byte inverterAddress, ControlCodes controlCode, byte functionCode, byte[] payload = null)
+        private TPacket WaitForPacket<TPacket>(byte inverterAddress, ControlCode controlCode, byte functionCode, byte[] payload = null)
             where TPacket : InverterPacket, new()
         {
             _receivedPacketData = null;
 
             while (_receivedPacketData == null)
             {
+                Console.WriteLine("V - Sending packet");
+
                 WritePacket(inverterAddress, controlCode, functionCode, payload);
                 Thread.Sleep(1000);
-
-                Console.WriteLine("V - Sending packet");
             }
 
             var packet = new TPacket();
@@ -93,7 +93,7 @@ namespace EversolarTest
             return packet;
         }
 
-        private void WritePacket(byte inverterAddress, ControlCodes controlCode, byte functionCode, byte[] payload = null)
+        private void WritePacket(byte inverterAddress, ControlCode controlCode, byte functionCode, byte[] payload = null)
         {
             payload = payload ?? new byte[0];
 
@@ -115,7 +115,7 @@ namespace EversolarTest
             packet[6] = (byte)controlCode;
             packet[7] = functionCode;
 
-            // Data
+            // Payload
             packet[8] = (byte)payload.Length;
             Array.Copy(payload, 0, packet, 9, payload.Length);
 

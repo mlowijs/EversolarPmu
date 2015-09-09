@@ -1,6 +1,6 @@
 ﻿namespace EversolarTest
 {
-    public class ReadFunctions
+    internal class ReadFunction
     {
         public const byte QueryNormalInfo = 0x02;
     }

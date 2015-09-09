@@ -1,6 +1,6 @@
 ﻿namespace EversolarTest
 {
-    public class RegisterFunctions
+    internal class RegisterFunction
     {
         public const byte OfflineQuery = 0x00;
         public const byte SendRegisterAddress = 0x01;

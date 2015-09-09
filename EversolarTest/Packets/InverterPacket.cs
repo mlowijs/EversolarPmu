@@ -10,7 +10,7 @@ namespace EversolarTest.Packets
         public byte[] Header { get; private set; }
         public byte SourceAddress { get; private set; }
         public byte DestinationAddress { get; private set; }
-        public ControlCodes ControlCode { get; private set; }
+        public ControlCode ControlCode { get; private set; }
         public byte FunctionCode { get; private set; }
         public byte[] Payload { get; private set; }
 
@@ -24,7 +24,7 @@ namespace EversolarTest.Packets
             SourceAddress = data[2];
             DestinationAddress = data[5];
 
-            ControlCode = (ControlCodes)data[6];
+            ControlCode = (ControlCode)data[6];
             FunctionCode = data[7];
 
             Payload = new byte[data[8]];
